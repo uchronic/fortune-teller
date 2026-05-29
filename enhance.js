@@ -15,6 +15,9 @@
 
   // ============ 注入所有增强 ============
   function applyEnhancements() {
+    // 六爻修复 - 每次都执行（因为 React 会重建 DOM）
+    fixLiuyaoDisplay();
+
     var app = document.querySelector(".app");
     if (!app || applied.has(app)) return;
     applied.add(app);
@@ -120,6 +123,71 @@
     }
   }
 
+  // ============ 修复六爻爻象显示 ============
+  function fixLiuyaoDisplay() {
+    document.querySelectorAll(".yao-row").forEach(function (row) {
+      if (applied.has(row)) return;
+
+      var symbol = row.querySelector(".yao-symbol");
+      var name = row.querySelector(".yao-name");
+      var type = row.querySelector(".yao-type");
+      if (!symbol) return;
+
+      // 清除原有文字内容
+      var isYang = !!symbol.querySelector(".yang-yao") || symbol.textContent.indexOf("━") >= 0 && symbol.textContent.indexOf("　") < 0 && symbol.textContent.trim().length >= 4;
+
+      // 检测阴阳
+      var yangEl = symbol.querySelector(".yang-yao");
+      var yinEl = symbol.querySelector(".yin-yao");
+      if (!yangEl && !yinEl) { applied.add(row); return; }
+
+      // 重置 symbol 容器
+      symbol.style.cssText = "display:flex;align-items:center;justify-content:center;flex:1;gap:0;padding:6px 0";
+
+      if (yangEl) {
+        // 阳爻 —— 一条完整粗横线
+        yangEl.textContent = "";
+        yangEl.style.cssText =
+          "display:block;width:100px;height:6px;background:var(--gold);border-radius:3px;" +
+          "box-shadow:0 0 8px rgba(201,169,110,0.4);font-size:0;line-height:0";
+      }
+      if (yinEl) {
+        // 阴爻 —— 中间断开的两段
+        yinEl.textContent = "";
+        yinEl.style.cssText =
+          "display:flex;align-items:center;justify-content:center;gap:10px;width:100px;height:6px;font-size:0;line-height:0";
+        var left = document.createElement("span");
+        left.style.cssText =
+          "display:block;width:40px;height:6px;background:var(--text);border-radius:3px";
+        var right = document.createElement("span");
+        right.style.cssText =
+          "display:block;width:40px;height:6px;background:var(--text);border-radius:3px";
+        yinEl.appendChild(left);
+        yinEl.appendChild(right);
+      }
+
+      // 爻名样式
+      if (name) {
+        name.style.cssText =
+          "width:36px;text-align:right;color:var(--muted);font-size:0.82rem;padding-right:8px;flex-shrink:0";
+      }
+
+      // 爻类型样式
+      if (type) {
+        type.style.cssText =
+          "width:60px;text-align:left;color:var(--muted);font-size:0.75rem;padding-left:8px;flex-shrink:0;white-space:nowrap";
+      }
+
+      // 行样式
+      row.style.cssText =
+        "display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;" +
+        "background:rgba(201,169,110,0.04);border:1px solid rgba(201,169,110,0.08);margin-bottom:4px;" +
+        "transition:all .3s ease";
+
+      applied.add(row);
+    });
+  }
+
   // ============ 注入动画样式 ============
   function injectStyles() {
     if (document.getElementById("mystic-enhance-styles")) return;
@@ -140,9 +208,10 @@
       ".tabs button{transition:all .25s ease}",
       ".tabs button:hover{background:rgba(201,169,110,0.15)}",
       ".yao-row{transition:all .3s ease}",
-      ".yao-row:hover{background:rgba(201,169,110,0.12)!important}",
+      ".yao-row:hover{background:rgba(201,169,110,0.12)!important;transform:translateX(4px)}",
       "header h1{transition:text-shadow .3s ease}",
       "header h1:hover{text-shadow:0 0 40px rgba(201,169,110,0.6),0 0 80px rgba(201,169,110,0.3)!important}",
+      ".yao-list{display:flex;flex-direction:column-reverse;gap:4px}",
     ].join("");
     document.head.appendChild(style);
   }
