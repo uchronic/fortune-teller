@@ -6,93 +6,79 @@
 (function () {
   "use strict";
 
-  // ============ 图片资源 ============
-  const BG_URL = "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1200&q=80";
-  const HEADER_BG = "https://images.unsplash.com/photo-1462332420958-a05d1e002413?w=800&q=80";
-  const CARD_BG = "https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=600&q=80";
+  var BG_URL = "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1200&q=80";
+  var applied = new WeakSet();
 
-  const applied = new WeakSet();
-
-  // ============ 注入所有增强 ============
   function applyEnhancements() {
-    // 六爻修复 - 每次都执行（因为 React 会重建 DOM）
-    fixLiuyaoDisplay();
+    // 1. 全局星空背景（只做一次）
+    if (!document.body.classList.contains("mystic-bg")) {
+      document.body.classList.add("mystic-bg");
+      document.documentElement.style.backgroundImage = "url('" + BG_URL + "')";
+      document.documentElement.style.backgroundSize = "cover";
+      document.documentElement.style.backgroundPosition = "center";
+      document.documentElement.style.backgroundAttachment = "fixed";
+      document.body.style.background = "linear-gradient(180deg,rgba(15,15,26,0.92),rgba(26,26,46,0.88) 50%,rgba(15,15,26,0.95)),url('" + BG_URL + "')";
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundAttachment = "fixed";
+    }
 
-    var app = document.querySelector(".app");
-    if (!app || applied.has(app)) return;
-    applied.add(app);
-
-    // 1. 全局星空背景
-    document.documentElement.style.backgroundImage =
-      "url('" + BG_URL + "')";
-    document.documentElement.style.backgroundSize = "cover";
-    document.documentElement.style.backgroundPosition = "center";
-    document.documentElement.style.backgroundAttachment = "fixed";
-    document.body.style.background =
-      "linear-gradient(180deg, rgba(15,15,26,0.92) 0%, rgba(26,26,46,0.88) 50%, rgba(15,15,26,0.95) 100%), url('" +
-      BG_URL + "')";
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundAttachment = "fixed";
-
-    // 2. Header 背景叠加
+    // 2. Header
     var header = document.querySelector("header");
-    if (header) {
-      header.style.position = "relative";
+    if (header && !applied.has(header)) {
       header.style.padding = "32px 0 28px";
-      header.style.background =
-        "linear-gradient(180deg, rgba(201,169,110,0.08), transparent)";
+      header.style.background = "linear-gradient(180deg,rgba(201,169,110,0.08),transparent)";
       header.style.borderBottom = "1px solid rgba(201,169,110,0.15)";
+      applied.add(header);
     }
 
-    // 3. 给标题添加装饰
+    // 3. 标题
     var h1 = document.querySelector("header h1");
-    if (h1) {
-      h1.style.textShadow = "0 0 30px rgba(201,169,110,0.4), 0 0 60px rgba(201,169,110,0.2)";
+    if (h1 && !applied.has(h1)) {
+      h1.style.textShadow = "0 0 30px rgba(201,169,110,0.4),0 0 60px rgba(201,169,110,0.2)";
       h1.style.letterSpacing = "0.08em";
+      applied.add(h1);
     }
 
-    // 4. tagline 增强
+    // 4. tagline
     var tagline = document.querySelector(".tagline");
-    if (tagline) {
+    if (tagline && !applied.has(tagline)) {
       tagline.style.letterSpacing = "0.15em";
       tagline.style.color = "rgba(201,169,110,0.6)";
+      applied.add(tagline);
     }
 
-    // 5. 表单卡片装饰
-    document.querySelectorAll(".form-card, .result-card").forEach(function (card) {
+    // 5. 卡片
+    document.querySelectorAll(".form-card,.result-card").forEach(function (card) {
       if (applied.has(card)) return;
-      card.style.position = "relative";
-      card.style.overflow = "hidden";
       card.style.backdropFilter = "blur(8px)";
       card.style.background = "rgba(30,30,53,0.85)";
-      card.style.boxShadow = "0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(201,169,110,0.1)";
+      card.style.boxShadow = "0 8px 32px rgba(0,0,0,0.3),inset 0 1px 0 rgba(201,169,110,0.1)";
       applied.add(card);
     });
 
-    // 6. Tab 栏增强
+    // 6. Tab
     var tabs = document.querySelector(".tabs");
     if (tabs && !applied.has(tabs)) {
       tabs.style.boxShadow = "0 4px 16px rgba(0,0,0,0.2)";
       applied.add(tabs);
     }
 
-    // 7. 分析区域增强
+    // 7. 分析区域
     document.querySelectorAll(".analysis").forEach(function (el) {
       if (applied.has(el)) return;
       el.style.borderTop = "1px solid rgba(201,169,110,0.2)";
       applied.add(el);
     });
 
-    // 8. 按钮增强
+    // 8. 按钮
     document.querySelectorAll(".btn-primary").forEach(function (btn) {
       if (applied.has(btn)) return;
       btn.style.boxShadow = "0 4px 20px rgba(201,169,110,0.3)";
-      btn.style.textShadow = "0 1px 2px rgba(0,0,0,0.3)";
       applied.add(btn);
     });
 
-    // 9. Footer 增强
+    // 9. Footer
     var footer = document.querySelector("footer");
     if (footer && !applied.has(footer)) {
       footer.style.borderTop = "1px solid rgba(201,169,110,0.1)";
@@ -101,94 +87,106 @@
       applied.add(footer);
     }
 
-    // 10. 添加浮动装饰粒子
+    // 10. 六爻爻线修复
+    fixYaoLines();
+
+    // 11. 浮动粒子
     if (!document.getElementById("mystic-particles")) {
-      var particleContainer = document.createElement("div");
-      particleContainer.id = "mystic-particles";
-      particleContainer.style.cssText =
-        "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden";
+      var pc = document.createElement("div");
+      pc.id = "mystic-particles";
+      pc.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden";
       for (var i = 0; i < 20; i++) {
         var p = document.createElement("div");
-        var size = 2 + Math.random() * 3;
-        p.style.cssText =
-          "position:absolute;width:" + size + "px;height:" + size + "px;" +
-          "background:radial-gradient(circle,rgba(201,169,110,0.8),transparent);" +
-          "border-radius:50%;left:" + (Math.random() * 100) + "%;" +
-          "top:" + (Math.random() * 100) + "%;" +
-          "animation:twinkle " + (3 + Math.random() * 4) + "s ease-in-out infinite;" +
-          "animation-delay:" + (Math.random() * 5) + "s";
-        particleContainer.appendChild(p);
+        var sz = 2 + Math.random() * 3;
+        p.style.cssText = "position:absolute;width:" + sz + "px;height:" + sz + "px;background:radial-gradient(circle,rgba(201,169,110,0.8),transparent);border-radius:50%;left:" + (Math.random() * 100) + "%;top:" + (Math.random() * 100) + "%;animation:twinkle " + (3 + Math.random() * 4) + "s ease-in-out infinite;animation-delay:" + (Math.random() * 5) + "s";
+        pc.appendChild(p);
       }
-      document.body.appendChild(particleContainer);
+      document.body.appendChild(pc);
     }
   }
 
-  // ============ 修复六爻爻象显示 ============
-  function fixLiuyaoDisplay() {
-    document.querySelectorAll(".yao-row").forEach(function (row) {
-      if (applied.has(row)) return;
+  // ============ 六爻爻线修复 ============
+  function fixYaoLines() {
+    var rows = document.querySelectorAll(".yao-row");
+    if (rows.length === 0) return;
 
+    rows.forEach(function (row) {
       var symbol = row.querySelector(".yao-symbol");
-      var name = row.querySelector(".yao-name");
-      var type = row.querySelector(".yao-type");
       if (!symbol) return;
 
-      // 清除原有文字内容
-      var isYang = !!symbol.querySelector(".yang-yao") || symbol.textContent.indexOf("━") >= 0 && symbol.textContent.indexOf("　") < 0 && symbol.textContent.trim().length >= 4;
+      // 容器
+      symbol.style.display = "flex";
+      symbol.style.alignItems = "center";
+      symbol.style.justifyContent = "center";
+      symbol.style.flex = "1";
+      symbol.style.padding = "8px 0";
+      symbol.style.letterSpacing = "0";
+      symbol.style.fontFamily = "inherit";
 
-      // 检测阴阳
-      var yangEl = symbol.querySelector(".yang-yao");
-      var yinEl = symbol.querySelector(".yin-yao");
-      if (!yangEl && !yinEl) { applied.add(row); return; }
-
-      // 重置 symbol 容器
-      symbol.style.cssText = "display:flex;align-items:center;justify-content:center;flex:1;gap:0;padding:6px 0";
-
-      if (yangEl) {
-        // 阳爻 —— 一条完整粗横线
-        yangEl.textContent = "";
-        yangEl.style.cssText =
-          "display:block;width:100px;height:6px;background:var(--gold);border-radius:3px;" +
-          "box-shadow:0 0 8px rgba(201,169,110,0.4);font-size:0;line-height:0";
-      }
-      if (yinEl) {
-        // 阴爻 —— 中间断开的两段
-        yinEl.textContent = "";
-        yinEl.style.cssText =
-          "display:flex;align-items:center;justify-content:center;gap:10px;width:100px;height:6px;font-size:0;line-height:0";
-        var left = document.createElement("span");
-        left.style.cssText =
-          "display:block;width:40px;height:6px;background:var(--text);border-radius:3px";
-        var right = document.createElement("span");
-        right.style.cssText =
-          "display:block;width:40px;height:6px;background:var(--text);border-radius:3px";
-        yinEl.appendChild(left);
-        yinEl.appendChild(right);
-      }
-
-      // 爻名样式
+      // 爻名
+      var name = row.querySelector(".yao-name");
       if (name) {
-        name.style.cssText =
-          "width:36px;text-align:right;color:var(--muted);font-size:0.82rem;padding-right:8px;flex-shrink:0";
+        name.style.width = "36px";
+        name.style.textAlign = "right";
+        name.style.paddingRight = "8px";
+        name.style.flexShrink = "0";
       }
 
-      // 爻类型样式
+      // 爻类型
+      var type = row.querySelector(".yao-type");
       if (type) {
-        type.style.cssText =
-          "width:60px;text-align:left;color:var(--muted);font-size:0.75rem;padding-left:8px;flex-shrink:0;white-space:nowrap";
+        type.style.width = "60px";
+        type.style.textAlign = "left";
+        type.style.paddingLeft = "8px";
+        type.style.flexShrink = "0";
       }
 
-      // 行样式
-      row.style.cssText =
-        "display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;" +
-        "background:rgba(201,169,110,0.04);border:1px solid rgba(201,169,110,0.08);margin-bottom:4px;" +
-        "transition:all .3s ease";
+      // 行
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.gap = "8px";
+      row.style.padding = "10px 12px";
+      row.style.borderRadius = "8px";
+      row.style.marginBottom = "4px";
 
-      applied.add(row);
+      // 阳爻
+      var yang = symbol.querySelector(".yang-yao");
+      if (yang) {
+        yang.textContent = "";
+        yang.style.display = "block";
+        yang.style.width = "100px";
+        yang.style.height = "6px";
+        yang.style.background = "#c9a96e";
+        yang.style.borderRadius = "3px";
+        yang.style.boxShadow = "0 0 8px rgba(201,169,110,0.4)";
+        yang.style.fontSize = "0";
+        yang.style.lineHeight = "0";
+      }
+
+      // 阴爻
+      var yin = symbol.querySelector(".yin-yao");
+      if (yin && !yin.querySelector(".yao-half")) {
+        yin.textContent = "";
+        yin.style.display = "flex";
+        yin.style.alignItems = "center";
+        yin.style.justifyContent = "center";
+        yin.style.gap = "10px";
+        yin.style.width = "100px";
+        yin.style.height = "6px";
+        yin.style.fontSize = "0";
+        yin.style.lineHeight = "0";
+        var left = document.createElement("span");
+        left.className = "yao-half";
+        left.style.cssText = "display:block;width:40px;height:6px;background:#e8e0d0;border-radius:3px";
+        var right = document.createElement("span");
+        right.className = "yao-half";
+        right.style.cssText = "display:block;width:40px;height:6px;background:#e8e0d0;border-radius:3px";
+        yin.appendChild(left);
+        yin.appendChild(right);
+      }
     });
   }
 
-  // ============ 注入动画样式 ============
   function injectStyles() {
     if (document.getElementById("mystic-enhance-styles")) return;
     var style = document.createElement("style");
@@ -211,28 +209,23 @@
       ".yao-row:hover{background:rgba(201,169,110,0.12)!important;transform:translateX(4px)}",
       "header h1{transition:text-shadow .3s ease}",
       "header h1:hover{text-shadow:0 0 40px rgba(201,169,110,0.6),0 0 80px rgba(201,169,110,0.3)!important}",
-      ".yao-list{display:flex;flex-direction:column-reverse;gap:4px}",
     ].join("");
     document.head.appendChild(style);
   }
 
-  // ============ MutationObserver ============
   function startObserver() {
     var root = document.getElementById("root");
     if (!root) return;
-
     var timer = null;
     var observer = new MutationObserver(function () {
       clearTimeout(timer);
-      timer = setTimeout(applyEnhancements, 80);
+      timer = setTimeout(applyEnhancements, 50);
     });
-
     observer.observe(root, { childList: true, subtree: true });
     applyEnhancements();
     injectStyles();
   }
 
-  // ============ 启动 ============
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", startObserver);
   } else {
