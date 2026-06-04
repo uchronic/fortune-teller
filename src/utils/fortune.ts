@@ -1,5 +1,6 @@
 import { astro } from 'iztro'
-import { Solar, Lunar, EightChar } from 'lunar-javascript'
+// @ts-expect-error lunar-javascript ships no type declarations
+import { Solar } from 'lunar-javascript'
 
 export interface BirthInput {
   year: number

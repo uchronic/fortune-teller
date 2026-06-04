@@ -21,7 +21,7 @@ const ZHI_DETAIL: Record<string, { wx: string; cang: string; month: string }> = 
   '亥': { wx: '水', cang: '壬甲', month: '十月' },
 }
 
-const SHISHEN_TABLE: Record<string, Record<string, string>> = {
+const SHISHEN_TABLE: Record<string, string> = {
   '同我同': '比肩', '同我异': '劫财',
   '我生同': '食神', '我生异': '伤官',
   '我克同': '偏财', '我克异': '正财',
@@ -515,7 +515,7 @@ function getDayun(bazi: any, gender?: 'male' | 'female'): string[] {
   return result
 }
 
-function getLiuqin(dayGan: string, counts: Record<string, number>, isStrong: boolean): string[] {
+function getLiuqin(dayGan: string, counts: Record<string, number>, _isStrong: boolean): string[] {
   const dayWx = WUXING_GAN[dayGan]
   const result: string[] = []
   const shengWo = Object.keys(WUXING_RELATION[dayWx]).find(k => WUXING_RELATION[dayWx][k] === '生我')!

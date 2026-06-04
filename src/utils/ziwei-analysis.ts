@@ -189,7 +189,6 @@ function analyzeDaXian(ziwei: any): string[] {
   const result: string[] = []
   if (!ziwei?.palaces) return result
 
-  const palaceNames = ['命宫', '兄弟', '夫妻', '子女', '财帛', '疾厄', '迁移', '交友', '官禄', '田宅', '福德', '父母']
   // 大限按宫位顺序走，每十年一限
   for (let i = 0; i < 6 && i < ziwei.palaces.length; i++) {
     const palace = ziwei.palaces[i]
@@ -202,7 +201,7 @@ function analyzeDaXian(ziwei: any): string[] {
   return result
 }
 
-function getDaXianHint(palace: string, stars: string[]): string {
+function getDaXianHint(palace: string, _stars: string[]): string {
   const hints: Record<string, string> = {
     '命宫': '自我意识强，人生方向明确',
     '兄弟': '人际关系活跃，合作机会多',

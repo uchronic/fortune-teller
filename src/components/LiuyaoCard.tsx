@@ -136,7 +136,6 @@ function getGuaAnalysis(upper: string, lower: string, lines: number[]): string[]
   }
 
   // 世应分析
-  const worldYao = (lines.length + parseInt(upper, 36)) % 6
   analysis.push(`【世应】世爻代表自己，应爻代表对方/事物。世应相生则顺，相克则有阻碍。`)
 
   // 六亲配置
