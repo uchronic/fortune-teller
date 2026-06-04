@@ -1,34 +1,8 @@
-const API_BASE = 'https://api.astrology-api.io'
-const API_KEY = 'ask_1bb6e3d982b13268ed1d34741b639a08dfcc0921196ffd4cfee5fff39872f62a'
-
-async function callApi(endpoint: string, body?: object) {
-  const opts: RequestInit = {
-    headers: {
-      'Authorization': `Bearer ${API_KEY}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  }
-  if (body) {
-    opts.method = 'POST'
-    opts.body = JSON.stringify(body)
-  }
-  const res = await fetch(`${API_BASE}${endpoint}`, opts)
-  if (!res.ok) {
-    let msg = `API error: ${res.status}`
-    try {
-      const json = await res.json()
-      if (json.error?.message) msg = json.error.message
-    } catch {}
-    if (res.status === 429) msg = 'API 配额已用完，请使用本地功能'
-    throw new Error(msg)
-  }
-  const json = await res.json()
-  if (json.success === false) {
-    throw new Error(json.error?.message || 'API 返回错误')
-  }
-  return json
-}
+// 本地命理计算（西方占星 / 塔罗 / 数字命理）
+// 纯前端实现，不依赖任何外部 API。
+//
+// 历史说明：早期版本曾内置 astrology-api.io 的远程调用层，但 UI 从未实际
+// 使用，且把 API key 硬编码进了源码。已整体移除，仅保留下面的本地算法。
 
 export interface AstroInput {
   name: string
@@ -39,114 +13,6 @@ export interface AstroInput {
   minute: number
   city: string
   countryCode: string
-}
-
-function makeSubject(input: AstroInput) {
-  return {
-    name: input.name || '命主',
-    birth_data: {
-      year: input.year,
-      month: input.month,
-      day: input.day,
-      hour: input.hour,
-      minute: input.minute,
-      second: 0,
-      city: input.city || 'Beijing',
-      country_code: input.countryCode || 'CN',
-    }
-  }
-}
-
-export async function getNatalChart(input: AstroInput) {
-  return callApi('/api/v3/charts/natal', {
-    subject: makeSubject(input),
-    options: { house_system: 'P', zodiac_type: 'Tropic', language: 'ZH' },
-  })
-}
-
-export async function getTarotDraw(count = 3) {
-  return callApi('/api/v3/tarot/cards/draw', { count })
-}
-
-export async function getNumerology(name: string, birthDate: string) {
-  const [y, m, d] = birthDate.split('-').map(Number)
-  return callApi('/api/v3/numerology/core-numbers', {
-    subject: { name, birth_data: { year: y, month: m, day: d } },
-    full_name: name,
-  })
-}
-
-export async function getDailyHoroscope(sign: string) {
-  return callApi('/api/v3/horoscope/sign/daily', { sign, language: 'ZH' })
-}
-
-export function formatNatalChart(data: any): string[] {
-  const lines: string[] = []
-  if (!data) return ['数据加载失败']
-
-  const planets = data.planets || data.celestial_bodies || []
-  const houses = data.houses || []
-  const aspects = data.aspects || []
-
-  if (planets.length > 0) {
-    lines.push('【行星位置】')
-    for (const p of planets) {
-      const name = p.name || p.planet
-      const sign = p.sign || p.zodiac_sign
-      const deg = p.degree != null ? `${Math.floor(p.degree)}°` : ''
-      const house = p.house ? `第${p.house}宫` : ''
-      if (name && sign) {
-        lines.push(`　${name} 在 ${sign} ${deg} ${house}`)
-      }
-    }
-  }
-
-  if (houses.length > 0) {
-    lines.push('【宫位】')
-    for (const h of houses.slice(0, 12)) {
-      lines.push(`　第${h.number || h.house}宫：${h.sign} ${h.degree ? Math.floor(h.degree) + '°' : ''}`)
-    }
-  }
-
-  if (aspects.length > 0) {
-    lines.push('【主要相位】')
-    for (const a of aspects.slice(0, 10)) {
-      lines.push(`　${a.planet1 || a.first} ${a.aspect_name || a.type} ${a.planet2 || a.second} (${a.orb ? a.orb.toFixed(1) + '°' : ''})`)
-    }
-  }
-
-  if (lines.length === 0) {
-    lines.push('星盘数据：')
-    lines.push(JSON.stringify(data).slice(0, 500))
-  }
-
-  return lines
-}
-
-export function formatTarot(data: any): string[] {
-  const lines: string[] = ['【塔罗牌阵】']
-  const cards = data.cards || data || []
-  if (Array.isArray(cards)) {
-    cards.forEach((card: any, i: number) => {
-      const name = card.name || card.card_name || `牌${i + 1}`
-      const reversed = card.reversed || card.is_reversed ? '（逆位）' : '（正位）'
-      const meaning = card.meaning || card.description || ''
-      lines.push(`　${i + 1}. ${name} ${reversed}`)
-      if (meaning) lines.push(`　   ${meaning.slice(0, 80)}`)
-    })
-  }
-  return lines
-}
-
-export function formatNumerology(data: any): string[] {
-  const lines: string[] = ['【数字命理】']
-  if (data.life_path) lines.push(`　生命路径数：${data.life_path.number} — ${data.life_path.meaning || ''}`)
-  if (data.expression) lines.push(`　表达数：${data.expression.number} — ${data.expression.meaning || ''}`)
-  if (data.soul_urge) lines.push(`　灵魂渴望数：${data.soul_urge.number} — ${data.soul_urge.meaning || ''}`)
-  if (data.personality) lines.push(`　人格数：${data.personality.number} — ${data.personality.meaning || ''}`)
-  if (data.birthday) lines.push(`　生日数：${data.birthday.number} — ${data.birthday.meaning || ''}`)
-  if (lines.length === 1) lines.push(`　${JSON.stringify(data).slice(0, 300)}`)
-  return lines
 }
 
 export function getLocalNatalAnalysis(year: number, month: number, day: number, hour: number): string[] {
@@ -196,7 +62,6 @@ export function getLocalNatalAnalysis(year: number, month: number, day: number, 
   lines.push(`　上升代表他人对你的第一印象、外在行为模式和人生方向。`)
   lines.push('')
 
-  // 元素分析
   const elementMeaning: Record<string, string> = {
     '火': '充满热情与行动力，喜欢挑战和冒险，但需注意耐心',
     '土': '务实稳重，注重物质安全和实际成果，但需避免过于保守',
@@ -207,12 +72,11 @@ export function getLocalNatalAnalysis(year: number, month: number, day: number, 
   lines.push(`　太阳${sunSign.element}象：${elementMeaning[sunSign.element]}`)
   lines.push('')
 
-  // 行星逆行提示（基于年份的简化版）
   const retrograde = year % 3 === 0 ? '水星' : year % 3 === 1 ? '金星' : '火星'
   lines.push('【年度行星提示】')
   lines.push(`　出生年${retrograde}能量突出，在相关领域（${retrograde === '水星' ? '沟通、学习、旅行' : retrograde === '金星' ? '感情、审美、财运' : '行动力、竞争、勇气'}）有特殊课题。`)
   lines.push('')
-  lines.push('注：月亮和上升星座为简化估算，精确计算需要出生地经纬度。如需精确星盘，请在API配额恢复后使用在线功能。')
+  lines.push('注：月亮和上升星座为简化估算，精确计算需要出生地经纬度。')
 
   return lines
 }
@@ -313,142 +177,5 @@ export function getLocalNumerology(year: number, month: number, day: number): st
   lines.push(`　${new Date().getFullYear()}年个人年数：${personalYear}`)
   lines.push(`　${pyMeaning[personalYear] || pyMeaning[reduce(personalYear)] || ''}`)
 
-  return lines
-}
-
-export async function getSynastry(person1: AstroInput, person2: AstroInput) {
-  return callApi('/api/v3/charts/synastry', {
-    subject: makeSubject(person1),
-    partner: makeSubject(person2),
-    options: { house_system: 'P', zodiac_type: 'Tropic', language: 'ZH' },
-  })
-}
-
-export async function getTransit(input: AstroInput) {
-  const now = new Date()
-  return callApi('/api/v3/charts/transit', {
-    subject: makeSubject(input),
-    transit_time: {
-      datetime: {
-        year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate(),
-        hour: now.getHours(), minute: now.getMinutes(), second: 0,
-        city: 'Beijing', country_code: 'CN',
-      }
-    },
-    options: { house_system: 'P', zodiac_type: 'Tropic', language: 'ZH' },
-  })
-}
-
-export async function getHumanDesign(input: AstroInput) {
-  return callApi('/api/v3/human-design/bodygraph', {
-    subject: { name: input.name || '命主', birth_data: { year: input.year, month: input.month, day: input.day, hour: input.hour, minute: input.minute, second: 0, city: input.city || 'Beijing', country_code: input.countryCode || 'CN' } },
-  })
-}
-
-export async function getFengShui(year: number) {
-  return callApi('/api/v3/chinese-astrology/bazi', {
-    subject: { name: '命主', birth_data: { year, month: 1, day: 1, hour: 12, minute: 0, second: 0, city: 'Beijing', country_code: 'CN' } },
-  })
-}
-
-export async function getZiweiApi(input: AstroInput) {
-  return callApi('/api/v3/zi-wei-dou-shu/chart', {
-    subject: { name: input.name || '命主', birth_data: { year: input.year, month: input.month, day: input.day, hour: input.hour, minute: input.minute, second: 0, city: input.city || 'Beijing', country_code: input.countryCode || 'CN' } },
-    options: { gender: 'male' },
-  })
-}
-
-export async function getNatalReport(input: AstroInput) {
-  return callApi('/api/v3/analysis/natal-report', {
-    subject: makeSubject(input),
-    options: { house_system: 'P', zodiac_type: 'Tropic', language: 'ZH' },
-  })
-}
-
-export async function getPersonalHoroscope(input: AstroInput) {
-  return callApi('/api/v3/horoscope/personal/daily', {
-    subject: makeSubject(input),
-    language: 'ZH',
-  })
-}
-
-export function formatTransit(data: any): string[] {
-  const lines: string[] = ['【当前行运】']
-  const aspects = data?.transit_aspects || data?.aspects || []
-  if (aspects.length > 0) {
-    for (const a of aspects.slice(0, 12)) {
-      const p1 = a.transit_planet || a.planet1 || a.first || ''
-      const p2 = a.natal_planet || a.planet2 || a.second || ''
-      const type = a.aspect_name || a.type || ''
-      lines.push(`　${p1} ${type} ${p2}`)
-    }
-  } else {
-    lines.push(`　${JSON.stringify(data).slice(0, 400)}`)
-  }
-  return lines
-}
-
-export function formatHumanDesign(data: any): string[] {
-  const lines: string[] = ['【人类设计】']
-  if (data.type) lines.push(`　类型：${data.type}`)
-  if (data.strategy) lines.push(`　策略：${data.strategy}`)
-  if (data.authority) lines.push(`　内在权威：${data.authority}`)
-  if (data.profile) lines.push(`　人生角色：${data.profile}`)
-  if (data.definition) lines.push(`　定义：${data.definition}`)
-  if (data.not_self_theme) lines.push(`　非自我主题：${data.not_self_theme}`)
-  if (data.signature) lines.push(`　签名：${data.signature}`)
-  if (data.incarnation_cross) lines.push(`　人生使命：${data.incarnation_cross}`)
-  const channels = data.channels || []
-  if (channels.length > 0) {
-    lines.push(`　通道（${channels.length}条）：`)
-    channels.slice(0, 6).forEach((c: any) => lines.push(`　　${c.name || c}`))
-  }
-  if (lines.length === 1) lines.push(`　${JSON.stringify(data).slice(0, 400)}`)
-  return lines
-}
-
-export function formatFengShui(data: any): string[] {
-  const lines: string[] = ['【中国命理（API）】']
-  const d = data?.data || data
-  if (d?.bazi || d?.four_pillars) {
-    const bazi = d.bazi || d.four_pillars
-    lines.push(`　四柱：${JSON.stringify(bazi).slice(0, 200)}`)
-  }
-  if (d?.elements) lines.push(`　五行：${JSON.stringify(d.elements).slice(0, 200)}`)
-  if (d?.day_master) lines.push(`　日主：${d.day_master}`)
-  if (lines.length === 1) lines.push(`　${JSON.stringify(d).slice(0, 400)}`)
-  return lines
-}
-
-export function formatReport(data: any): string[] {
-  const lines: string[] = ['【星盘综合报告】']
-  if (typeof data === 'string') {
-    data.split('\n').filter((l: string) => l.trim()).slice(0, 20).forEach((l: string) => lines.push(`　${l}`))
-  } else if (data.report || data.text || data.content) {
-    const text = data.report || data.text || data.content
-    text.split('\n').filter((l: string) => l.trim()).slice(0, 20).forEach((l: string) => lines.push(`　${l}`))
-  } else if (data.sections) {
-    for (const s of data.sections.slice(0, 8)) {
-      lines.push(`【${s.title || s.name}】`)
-      lines.push(`　${(s.text || s.content || '').slice(0, 150)}`)
-    }
-  } else {
-    lines.push(`　${JSON.stringify(data).slice(0, 500)}`)
-  }
-  return lines
-}
-
-export function formatHoroscope(data: any): string[] {
-  const lines: string[] = ['【今日运势】']
-  if (data.horoscope || data.text) {
-    lines.push(`　${data.horoscope || data.text}`)
-  } else if (data.general) {
-    lines.push(`　综合：${data.general}`)
-    if (data.love) lines.push(`　感情：${data.love}`)
-    if (data.career) lines.push(`　事业：${data.career}`)
-    if (data.health) lines.push(`　健康：${data.health}`)
-  } else {
-    lines.push(`　${JSON.stringify(data).slice(0, 400)}`)
-  }
   return lines
 }
