@@ -195,3 +195,30 @@ footer {
   .ziwei-grid { grid-template-columns: repeat(2, 1fr); }
   .tabs button { font-size: 0.85rem; padding: 8px; }
 }
+
+/* 最近命盘历史 */
+.history-card {
+  background: var(--card); border-radius: 16px;
+  padding: 18px 20px; margin-top: 18px;
+  border: 1px solid rgba(201,169,110,0.2);
+  animation: fadeIn 0.4s ease-out;
+}
+.history-card h3 { color: var(--gold); margin-bottom: 12px; text-align: center; }
+.history-list { list-style: none; padding: 0; margin: 0; }
+.history-list li { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.history-item {
+  flex: 1; text-align: left; padding: 10px 14px;
+  border: 1px solid rgba(201,169,110,0.25); border-radius: 10px;
+  background: transparent; color: var(--gold-light);
+  font-family: inherit; font-size: 0.95rem; cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.history-item:hover { background: rgba(201,169,110,0.1); border-color: var(--gold); }
+.history-del {
+  width: 34px; height: 34px; flex-shrink: 0;
+  border: 1px solid rgba(138,128,112,0.3); border-radius: 8px;
+  background: transparent; color: var(--muted);
+  cursor: pointer; font-size: 0.9rem; line-height: 1;
+  transition: color 0.2s, border-color 0.2s;
+}
+.history-del:hover { color: #d66; border-color: #d66; }

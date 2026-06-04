@@ -5,6 +5,7 @@ import { ZiweiCard } from './components/ZiweiCard'
 import { LiuyaoCard } from './components/LiuyaoCard'
 import { WesternAstro } from './components/WesternAstro'
 import { getZiwei, getBazi, type BirthInput } from './utils/fortune'
+import { loadHistory, saveHistory, removeHistory, describeEntry, type HistoryEntry } from './utils/history'
 import './app.css'
 
 type Tab = 'input' | 'bazi' | 'ziwei' | 'liuyao' | 'western'
@@ -14,17 +15,34 @@ export default function App() {
   const [bazi, setBazi] = useState<any>(null)
   const [ziwei, setZiwei] = useState<any>(null)
   const [birthInput, setBirthInput] = useState<BirthInput | null>(null)
+  const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory())
+
+  const runChart = (input: BirthInput) => {
+    setBazi(getBazi(input))
+    setZiwei(getZiwei(input))
+    setBirthInput(input)
+    setTab('bazi')
+  }
 
   const handleSubmit = (input: BirthInput) => {
     try {
-      setBazi(getBazi(input))
-      setZiwei(getZiwei(input))
-      setBirthInput(input)
-      setTab('bazi')
+      runChart(input)
+      setHistory(saveHistory(input))
     } catch (e) {
       alert('排盘出错，请检查日期是否正确')
     }
   }
+
+  const restore = (entry: HistoryEntry) => {
+    try {
+      runChart(entry.input)
+      setHistory(saveHistory(entry.input)) // 提到最前
+    } catch {
+      alert('该命盘恢复失败，可能数据已损坏')
+    }
+  }
+
+  const forget = (id: string) => setHistory(removeHistory(id))
 
   const share = () => {
     if (navigator.share) {
@@ -47,6 +65,22 @@ export default function App() {
           <BirthForm onSubmit={handleSubmit} />
           <div style={{ textAlign: 'center', color: 'var(--muted)', margin: '16px 0' }}>— 或直接占卜 —</div>
           <button className="btn-primary" onClick={() => setTab('liuyao')}>🪙 六爻摇卦</button>
+
+          {history.length > 0 && (
+            <div className="history-card">
+              <h3>最近命盘</h3>
+              <ul className="history-list">
+                {history.map(e => (
+                  <li key={e.id}>
+                    <button className="history-item" onClick={() => restore(e)}>
+                      {describeEntry(e)}
+                    </button>
+                    <button className="history-del" title="删除" onClick={() => forget(e.id)}>✕</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </>
       )}
 
