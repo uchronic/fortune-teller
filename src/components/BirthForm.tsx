@@ -1,52 +1,24 @@
 import { useState } from 'react'
 import type { BirthInput } from '../utils/fortune'
-
-interface Props { onSubmit: (input: BirthInput) => void }
-
-export function BirthForm({ onSubmit }: Props) {
-  const [year, setYear] = useState(1990)
-  const [month, setMonth] = useState(1)
-  const [day, setDay] = useState(1)
-  const [hour, setHour] = useState(12)
-  const [gender, setGender] = useState<'male' | 'female'>('male')
-
-  return (
-    <div className="form-card">
-      <h2>请输入生辰</h2>
-      <div className="form-row">
-        <label>
-          年<input type="number" min={1900} max={2030} value={year} onChange={e => setYear(+e.target.value)} />
-        </label>
-        <label>
-          月<input type="number" min={1} max={12} value={month} onChange={e => setMonth(+e.target.value)} />
-        </label>
-        <label>
-          日<input type="number" min={1} max={31} value={day} onChange={e => setDay(+e.target.value)} />
-        </label>
-      </div>
-      <div className="form-row">
-        <label>
-          时辰
-          <select value={hour} onChange={e => setHour(+e.target.value)}>
-            {[
-              [23,'子时(23-1点)'],[1,'丑时(1-3点)'],[3,'寅时(3-5点)'],
-              [5,'卯时(5-7点)'],[7,'辰时(7-9点)'],[9,'巳时(9-11点)'],
-              [11,'午时(11-13点)'],[13,'未时(13-15点)'],[15,'申时(15-17点)'],
-              [17,'酉时(17-19点)'],[19,'戌时(19-21点)'],[21,'亥时(21-23点)']
-            ].map(([v, l]) => <option key={v as number} value={v as number}>{l}</option>)}
-          </select>
-        </label>
-        <label>
-          性别
-          <select value={gender} onChange={e => setGender(e.target.value as 'male'|'female')}>
-            <option value="male">男</option>
-            <option value="female">女</option>
-          </select>
-        </label>
-      </div>
-      <button className="btn-primary" onClick={() => onSubmit({ year, month, day, hour, gender })}>
-        开始排盘
-      </button>
-    </div>
-  )
+export function BirthForm({ onSubmit, busy = false, title = '输入生辰，观照人生', compact = false, initialInput }: {
+  onSubmit: (input: BirthInput) => void; busy?: boolean; title?: string; compact?: boolean; initialInput?: BirthInput
+}) {
+  const [value, setValue] = useState<BirthInput>({calendar:'solar',sect:2,...(initialInput||{year:1990,month:1,day:1,hour:12,minute:0,gender:'male'})})
+  const change = (key: keyof BirthInput, val: unknown) => setValue(v=>({...v,[key]:val}))
+  return <form className={compact?'birth-form compact':'form-card birth-form'} onSubmit={event=>{event.preventDefault();onSubmit(value)}}>
+    <h2>{title}</h2><div className="form-row">
+      <label>历法<select value={value.calendar} onChange={e=>change('calendar',e.target.value)}><option value="solar">公历</option><option value="lunar">农历</option></select></label>
+      <label>性别<select value={value.gender} onChange={e=>change('gender',e.target.value)}><option value="male">男</option><option value="female">女</option></select></label>
+    </div><div className="form-row">
+      <label>年<input required type="number" min="1900" max="2100" value={value.year} onChange={e=>change('year',+e.target.value)}/></label>
+      <label>月<input required type="number" min="1" max="12" value={value.month} onChange={e=>change('month',+e.target.value)}/></label>
+      <label>日<input required type="number" min="1" max={value.calendar==='lunar'?30:31} value={value.day} onChange={e=>change('day',+e.target.value)}/></label>
+    </div><div className="form-row">
+      <label>时（0–23）<input required type="number" min="0" max="23" value={value.hour} onChange={e=>change('hour',+e.target.value)}/></label>
+      <label>分<input required type="number" min="0" max="59" value={value.minute} onChange={e=>change('minute',+e.target.value)}/></label>
+      {value.calendar==='lunar'&&<label>月份<select value={value.leapMonth?'leap':'normal'} onChange={e=>change('leapMonth',e.target.value==='leap')}><option value="normal">普通月</option><option value="leap">闰月</option></select></label>}
+    </div><details className="options"><summary>排盘约定</summary><p>按北京时间（UTC+8）输入，不作真太阳时校正。</p>
+      <label>八字子时换日<select value={value.sect} onChange={e=>change('sect',+e.target.value)}><option value="2">00:00 换日（默认）</option><option value="1">23:00 换日</option></select></label>
+    </details><button className="btn-primary" disabled={busy}>{busy?'正在排盘…':compact?'确认生辰':'开始排盘'}</button>
+  </form>
 }

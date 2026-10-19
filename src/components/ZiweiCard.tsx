@@ -1,44 +1,9 @@
-import { analyzeZiwei } from '../utils/ziwei-analysis'
-
-interface Props {
-  ziwei: any
-}
-
-const PALACE_ORDER = [
-  '命宫', '兄弟', '夫妻', '子女', '财帛', '疾厄',
-  '迁移', '交友', '官禄', '田宅', '福德', '父母'
-]
-
-export function ZiweiCard({ ziwei }: Props) {
-  const palaces = ziwei?.palaces || []
-  const analysis = analyzeZiwei(ziwei)
-
-  return (
-    <div className="result-card">
-      <h3>紫微斗数命盘</h3>
-      {ziwei?.fiveElementsClass && (
-        <p className="sub-info">五行局：{ziwei.fiveElementsClass}</p>
-      )}
-      <div className="ziwei-grid">
-        {palaces.slice(0, 12).map((p: any, i: number) => (
-          <div key={i} className="palace">
-            <span className="palace-name">{p.name || PALACE_ORDER[i]}</span>
-            <span className="palace-branch">{p.earthlyBranch}</span>
-            <div className="palace-stars">
-              {(p.majorStars || []).map((s: any) => (
-                <span key={s.name} className="star major">{s.name}</span>
-              ))}
-              {(p.minorStars || []).slice(0, 3).map((s: any) => (
-                <span key={s.name} className="star minor">{s.name}</span>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="analysis">
-        <h4>命盘解读</h4>
-        {analysis.map((line, i) => <p key={i}>{line}</p>)}
-      </div>
-    </div>
-  )
+export function ZiweiCard({ziwei,chart,notes}:{ziwei:any;chart:any;notes:any}) {
+  const four=chart.nianGanSiHua
+  return <div className="result-card"><div className="section-title"><div><span className="eyebrow">PURPLE STAR</span><h3>紫微斗数命盘</h3></div><span className="pill">{ziwei.fiveElementsClass}</span></div>
+    <p className="sub-info">{four.stemName}年四化 · {four.lu}禄 · {four.quan}权 · {four.ke}科 · {four.ji}忌</p>
+    <div className="ziwei-grid">{ziwei.palaces.map((p:any)=><div key={p.name} className={`palace ${p.name==='命宫'?'soul-palace':''}`}><span className="palace-name">{p.name}{p.isBodyPalace?' · 身':''}</span><span className="palace-branch">{p.heavenlyStem}{p.earthlyBranch}</span><div className="palace-stars">{p.majorStars.map((s:any)=><span key={s.name} className="star major">{s.name}<small>{s.brightness} {s.mutagen||''}</small></span>)}{p.minorStars.map((s:any)=><span key={s.name} className="star minor">{s.name}{s.mutagen||''}</span>)}</div><small className="muted">大限 {p.decadal?.range?.join('–')} 岁</small></div>)}</div>
+    <div className="analysis"><h4>格局印证</h4>{notes.patterns.length?notes.patterns.map((p:any,i:number)=><article className="pattern-card" key={i}><strong>{p.name}</strong><span className="pill">{{excellent:'上格',good:'助力',neutral:'参考',caution:'留意'}[p.level as string]||p.level}</span><p>{p.description}</p>{p.conditions&&<small className="muted">{Array.isArray(p.conditions)?p.conditions.join('；'):[...(p.conditions.required||[]),...(p.conditions.bonus||[]),...(p.conditions.breaking||[])].join('；')}</small>}</article>):<p>当前命盘未命中已收录的格局，仍需结合各宫星曜与四化。</p>}</div>
+    {notes.spouse.length>0&&<div className="analysis"><h4>夫妻宫参考</h4>{notes.spouse.map((s:any)=><article className="pattern-card" key={s.star}><strong>{s.star}</strong><p>{s.knowledge.summary}</p><p>{Array.isArray(s.knowledge.spouse_traits)?s.knowledge.spouse_traits.join('；'):s.knowledge.spouse_traits}</p></article>)}</div>}
+  </div>
 }

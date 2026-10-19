@@ -1,17 +1,19 @@
 {
   "name": "fortune-teller",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "python scripts/package_engine.py && node scripts/prepare-runtime.mjs && tsc -b && vite build",
+    "test": "python -X utf8 -B tests/test_engine.py && node --test tests/web.test.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "iztro": "^2.5.8",
-    "lunar-javascript": "^1.7.7",
+    "lunar-javascript": "1.7.7",
+    "pyodide": "314.0.7",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

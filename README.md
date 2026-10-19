@@ -1,73 +1,37 @@
-# React + TypeScript + Vite
+# MLSS · 洛玉衡
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+在线地址：https://uchronic.github.io/fortune-teller/
 
-Currently, two official plugins are available:
+React、TypeScript 与 Vite 构建的静态命理工具。MLSS 1.5 的 Python 算法通过同站托管的 Pyodide 在浏览器 Worker 中执行；出生信息在浏览器内计算，历史记录保存在本机。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+包含八字与精确起运、紫微十二宫与格局、称骨、六爻纳甲、梅花、奇门、黄历、双人五行对照与典籍检索。网页的算法快照来自本地 MLSS；Hermes 的自由对话、私人案例和外部服务不属于静态网页功能。详细范围与校验样例见 [对齐说明](docs/MLSS-ALIGNMENT.md)。
 
-## React Compiler
+## 本地开发
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+需要 Node.js 24 与 Python 3.13。首次运行：
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm ci
+python -m zipfile -e engine/vendor.zip engine
+npm test
+npm run build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+访问终端显示地址下的 `/fortune-teller/`。开发模式先运行一次 build 生成 Python 与运行时资源，再执行 `npm run dev`。首次打开计算工具需要下载 Python 运行时，之后由浏览器缓存。
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 更新本地算法快照
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+python scripts/sync_mlss.py --skill /path/to/mlss --qimen /path/to/kinqimen
+npm test
+npm run build
 ```
+
+同步脚本只复制明确列出的计算模块和依赖，移除命令行测试入口；发布前仍需审阅差异。不要复制 Hermes 配置、凭证、记忆或个人案例。快照来源与哈希记录在 `engine/manifest.json`。
+
+## 发布
+
+推送 `main` 会运行 `.github/workflows/pages.yml`：安装锁定依赖、执行回归校验、构建并发布 GitHub Pages。构建产物和大型运行时不提交 Git；CI 从锁定的依赖生成。原 `gh-pages` 分支保留旧版，方便回退。
+
+第三方来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

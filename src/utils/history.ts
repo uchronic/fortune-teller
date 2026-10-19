@@ -18,7 +18,7 @@ export function loadHistory(): HistoryEntry[] {
     const raw = localStorage.getItem(KEY)
     if (!raw) return []
     const arr = JSON.parse(raw)
-    return Array.isArray(arr) ? arr : []
+    return Array.isArray(arr) ? arr.filter(e=>e && typeof e.id==='string' && e.input && Number.isInteger(e.input.year) && e.input.year>=1900 && e.input.year<=2100 && ['male','female'].includes(e.input.gender) && Number.isInteger(e.input.hour) && e.input.hour>=0 && e.input.hour<=23) : []
   } catch {
     return []
   }
@@ -57,12 +57,12 @@ export function clearHistory(): void {
 }
 
 function signature(i: BirthInput): string {
-  return `${i.year}-${i.month}-${i.day}-${i.hour}-${i.gender}`
+  return `${i.year}-${i.month}-${i.day}-${i.hour}-${i.minute||0}-${i.gender}-${i.calendar||'solar'}-${!!i.leapMonth}-${i.sect||2}`
 }
 
 export function describeEntry(e: HistoryEntry): string {
   const { year, month, day, hour, gender } = e.input
   const g = gender === 'male' ? '男' : '女'
   const hh = String(hour).padStart(2, '0')
-  return `${year}年${month}月${day}日 ${hh}时 · ${g}`
+  return `${e.input.calendar==='lunar'?'农历':'公历'} ${year}年${e.input.leapMonth?'闰':''}${month}月${day}日 ${hh}:${String(e.input.minute||0).padStart(2,'0')} · ${g}`
 }

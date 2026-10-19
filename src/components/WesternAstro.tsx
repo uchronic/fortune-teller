@@ -20,6 +20,7 @@ export function WesternAstro({ birthInput }: Props) {
   return (
     <div className="result-card">
       <h3>西方占星 · 塔罗 · 数字命理</h3>
+      <p className="muted">星座采用本地简化估算；月亮与上升结果供趣味参考。</p>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {birthInput && (

@@ -1,0 +1,33 @@
+{
+  "version": "1.5.0",
+  "syncedAt": "2026-10-19",
+  "modules": [
+    {
+      "path": "wuxing_quantify.py",
+      "sha256": "06c67ce5b363dcb1067298fb45ef968d4d0318b3ad158aa39c660b70c4210eb0"
+    },
+    {
+      "path": "chenggu.py",
+      "sha256": "234367507c693910a20822d15123fc3e211a90b7b6da3541d92b8e22d69c2143"
+    },
+    {
+      "path": "patterns_bridge.py",
+      "sha256": "bb37dfb9ef5bbf97d634df94d0a9d8d75748704dd930c8d9d85cb62e130c9c3b"
+    },
+    {
+      "path": "heming_bridge.py",
+      "sha256": "3535c7cdc04f1e72d3b0e81550a8def4b569618dc78514ccfa9173c830c184c5"
+    },
+    {
+      "path": "classics_bridge.py",
+      "sha256": "50ea6ea9311e7e609a6a5842ff18b4b97cbdb02288e9c686089e922a82f1b0cc"
+    },
+    {
+      "path": "nihai_bridge.py",
+      "sha256": "15b1241f6798c6e89ae62c403de50a691714e8c6354a8f70de3dc107dfb03bd9"
+    }
+  ],
+  "lunarPython": "1.4.8",
+  "bidict": "0.23.1",
+  "privacy": "Public code allowlist only. No profile, cases, memories, environment or personal data."
+}

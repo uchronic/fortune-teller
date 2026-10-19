@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { arrangeLiuyao } from '../utils/liuyao'
+import { getBazi } from '../utils/fortune'
 import { getLiuyao, interpretLiuyao } from '../utils/fortune'
 
 const GUA_64: Record<string, { name: string; judgment: string; image: string }> = {
@@ -142,7 +144,7 @@ function getGuaAnalysis(upper: string, lower: string, lines: number[]): string[]
   const guaWuxing: Record<string, string> = { '乾': '金', '兑': '金', '离': '火', '震': '木', '巽': '木', '坎': '水', '艮': '土', '坤': '土' }
   const upperWx = guaWuxing[upper] || ''
   const lowerWx = guaWuxing[lower] || ''
-  const guaMainWx = upperWx // 以上卦五行为本卦属性
+  const guaMainWx = guaWuxing[arrangeLiuyao(lines, '甲').palace.name]
   if (guaMainWx) {
     const liuqinMap = getLiuqinForGua(guaMainWx)
     analysis.push('【六亲配置】')
@@ -216,8 +218,14 @@ function getGuaAnalysis(upper: string, lower: string, lines: number[]): string[]
 
 export function LiuyaoCard() {
   const [result, setResult] = useState<ReturnType<typeof interpretLiuyao> | null>(null)
+  const [dayGan,setDayGan]=useState('甲')
+  const [dayPillar,setDayPillar]=useState('')
+  const arrangement=result?arrangeLiuyao(result.lines,dayGan):null
 
   const shake = () => {
+    const now=new Date(Date.now()+8*3600000)
+    const bazi=getBazi({year:now.getUTCFullYear(),month:now.getUTCMonth()+1,day:now.getUTCDate(),hour:now.getUTCHours(),minute:now.getUTCMinutes(),gender:'male'})
+    setDayGan(bazi.day.gan);setDayPillar(bazi.day.gan+bazi.day.zhi)
     const lines = getLiuyao()
     setResult(interpretLiuyao(lines))
   }
@@ -233,6 +241,7 @@ export function LiuyaoCard() {
       ) : (
         <div className="liuyao-result">
           <p className="gua-name">上卦：{result.upperGua} · 下卦：{result.lowerGua}</p>
+          <p className="muted">{arrangement?.palace.name}宫 · {arrangement?.palace.generation} · 起卦日 {dayPillar}</p>
           <div className="yao-list">
             {result.lineNames.map((name, i) => (
               <div key={i} className="yao-row">
@@ -247,6 +256,7 @@ export function LiuyaoCard() {
               </div>
             ))}
           </div>
+          <div className="table-scroll"><table><thead><tr><th>爻位</th><th>六神</th><th>纳甲</th><th>六亲</th><th>世应</th><th>动爻</th></tr></thead><tbody>{arrangement?.rows.map((r,i)=><tr key={i}><td>{result.lineNames[i]}</td><td>{r.god}</td><td>{r.stem}{r.branch}{r.element}</td><td>{r.kin}</td><td className="gold">{r.world?'世':r.response?'应':'—'}</td><td>{r.value===6||r.value===9?'动':'静'}</td></tr>)}</tbody></table></div>
           <div className="analysis">
             <h4>卦象解析</h4>
             {getGuaAnalysis(result.upperGua, result.lowerGua, result.lines).map((line, i) => (

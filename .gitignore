@@ -8,6 +8,13 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+/public/runtime/
+/public/python/
+/engine/__pycache__/
+**/__pycache__/
+/engine/lunar_python/
+/engine/bidict/
+/engine/licenses/
 dist
 dist-ssr
 *.local

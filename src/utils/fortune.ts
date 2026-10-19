@@ -7,6 +7,10 @@ export interface BirthInput {
   month: number
   day: number
   hour: number // 0-23
+  minute?: number
+  calendar?: 'solar' | 'lunar'
+  leapMonth?: boolean
+  sect?: number
   gender: 'male' | 'female'
 }
 
@@ -18,7 +22,7 @@ export function getZiwei(input: BirthInput) {
 }
 
 export function getBazi(input: BirthInput) {
-  const solar = Solar.fromYmdHms(input.year, input.month, input.day, input.hour, 0, 0)
+  const solar = Solar.fromYmdHms(input.year, input.month, input.day, input.hour, input.minute || 0, 0)
   const lunar = solar.getLunar()
   const eightChar = lunar.getEightChar()
 
